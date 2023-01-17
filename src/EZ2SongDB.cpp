@@ -1,12 +1,11 @@
 #include "EZ2SongDB.h"
 #include <memoryapi.h>
+#include <string>
 
   
 //EZ2SongDb::SongList songList;
 using namespace EZ2SongDb;
 
-const char fnexKEY[] = "\xF3\x1A\x83\x3B\xAA\xD9\x46\x5B\x71\x3D\x16\xB9\xF2\x8D\x1F\x80\xD0\x39\x64\xAC\x30\xB6\x84\x40\xBF\xC0\x8A\x31\x12\xB1\x39\x19";
-const char fnexKEY2[] = "\x7D\x5D\x4F\x97\x5B\x29\xC4\x08\xB1\x77\x46\xA4\x40\x98\x8E\xE9\xCA\x43\xFE\x25\x9F\x28\x0D\x9E\x7B\x07\xDE\x84\xC0\x25\x45\x9C";
 
 
 bool CipherBinData(LPVOID lpAddress, int dataSize, const char key1[], const char key2[]) {
@@ -53,7 +52,22 @@ bool CipherBinData(LPVOID lpAddress, int dataSize, const char key1[], const char
     return true;
 }
 
-bool EZ2SongDb::openFile(LPCTSTR inputFile, EZ2SongDb::SongList* songList, bool decrypt) {
+bool saveMemoryRangeToFile(LPCTSTR filePath, LPVOID address, int size) {
+
+    FILE* file = fopen(filePath, "wb");
+    if (file == NULL) {
+        perror("Error opening file");
+        return false;
+    }
+    size_t bytes_written = fwrite(address, 1, size, file); // write the memory range to the file
+    if (bytes_written != size) {
+        perror("Error writing to file");
+    }
+
+    fclose(file);
+}
+
+bool EZ2SongDb::openFile(LPCTSTR inputFile, EZ2SongDb::SongList* songList, int gameVer, bool saveDecrypt, bool decrypt) {
 
     char filePath[MAX_PATH];
 
@@ -69,7 +83,7 @@ bool EZ2SongDb::openFile(LPCTSTR inputFile, EZ2SongDb::SongList* songList, bool 
     CloseHandle(hFile);
 
     if (decrypt) {
-        if (!CipherBinData(lpAddress, fileSize, fnexKEY, fnexKEY2)) {
+        if (!CipherBinData(lpAddress, fileSize, keys1[gameVer], keys2[gameVer])) {
             return false;
         };
     }               
@@ -78,47 +92,75 @@ bool EZ2SongDb::openFile(LPCTSTR inputFile, EZ2SongDb::SongList* songList, bool 
         songList->numSongs = -1;
     }
 
-    memcpy(&songList->gameMode, (BYTE*)lpAddress + gameModeOffset, sizeof(uint8_t));
-    memcpy(&songList->numSongs, (BYTE*)lpAddress + numSongOffset, sizeof(uint16_t));
-    memcpy(&songList->songListOffset, (BYTE*)lpAddress + playlistNameSizeOffset, sizeof(uint32_t));
-    memcpy(&songList->categoriesOffset, (BYTE*)lpAddress + songlistSizeOffset, sizeof(uint32_t));
+
+    //save the unencrypted file
+    if (saveDecrypt) {
+        std::string savepath = std::string(inputFile) + ".dmp";
+        saveMemoryRangeToFile(savepath.c_str(), lpAddress, fileSize);
+    } //change to flag
+
+
+    if (gameVer == EV) {
+        memcpy(&songList->gameMode, (BYTE*)lpAddress + gameModeOffset, sizeof(uint8_t));
+        memcpy(&songList->numSongs, (BYTE*)lpAddress + 0xA, sizeof(uint16_t));
+        memcpy(&songList->songListOffset, (BYTE*)lpAddress + 0x6, sizeof(uint32_t));
+    }else {
+        memcpy(&songList->gameMode, (BYTE*)lpAddress + gameModeOffset, sizeof(uint8_t));
+        memcpy(&songList->numSongs, (BYTE*)lpAddress + numSongOffset, sizeof(uint16_t));
+        memcpy(&songList->songListOffset, (BYTE*)lpAddress + playlistNameSizeOffset, sizeof(uint32_t));
+        memcpy(&songList->categoriesOffset, (BYTE*)lpAddress + songlistSizeOffset, sizeof(uint32_t));
+    }
+        
 
 
     //populate song list
     for (int i = 0; i < songList->numSongs; i++) {
         int offset = 0x56 * i;
-        memcpy(&songList->songs[i].name, (BYTE*)lpAddress + songlistOffset + offset, sizeof(char[songNameSize]));
-        memcpy(&songList->songs[i].gameVersion, (BYTE*)lpAddress + gameVerOffset + offset, sizeof(uint16_t));
+        memcpy(&songList->songs[i].name, (BYTE*)lpAddress + songList->songListOffset + offset, sizeof(char[songNameSize]));
+        memcpy(&songList->songs[i].gameVersion, (BYTE*)lpAddress + songList->songListOffset + gameVerOffset + offset, sizeof(uint16_t));
 
         for (int j = 0; j < numCharts; j++) {
             int chartOffset = 0x09 * j;
 
-            memcpy(&songList->songs[i].charts[j].level, (BYTE*)lpAddress + nmOffset + chartOffset + offset, sizeof(uint8_t));
+            memcpy(&songList->songs[i].charts[j].level, (BYTE*)lpAddress + songList->songListOffset + nmOffset + chartOffset + offset, sizeof(uint8_t));
 
-            memcpy(&songList->songs[i].charts[j].minBPM, (BYTE*)lpAddress + nmMinBpm + chartOffset + offset, sizeof(float));
+            memcpy(&songList->songs[i].charts[j].minBPM, (BYTE*)lpAddress + songList->songListOffset + nmMinBpm + chartOffset + offset, sizeof(float));
 
-            memcpy(&songList->songs[i].charts[j].maxBPM, (BYTE*)lpAddress + nmMaxBpm + chartOffset + offset, sizeof(float));
+            memcpy(&songList->songs[i].charts[j].maxBPM, (BYTE*)lpAddress + songList->songListOffset + nmMaxBpm + chartOffset + offset, sizeof(float));
         }
     }
 
 
     //populate categories
-    int offset = 0;
-    for (int i = 0; i < NUM_CATEGORIES; i++) {
-        memcpy(&songList->categories[i].numSongs, (BYTE*)lpAddress + songList->categoriesOffset + offset, sizeof(uint16_t));
-        offset += 2;
-        for (int j = 0; j < songList->categories[i].numSongs; j++) {
-            char *name = (char*)malloc(16);
-            memcpy(name, (BYTE*)lpAddress + songList->categoriesOffset+ offset, sizeof(char[16]));
-            songList->categories[i].songNames[j] = name;
-            offset += (0x10);
+    if (gameVer == FN || gameVer == FNEX) {
+        int offset = 0;
+        for (int i = 0; i < NUM_CATEGORIES; i++) {
+            memcpy(&songList->categories[i].numSongs, (BYTE*)lpAddress + songList->categoriesOffset + offset, sizeof(uint16_t));
+            offset += 2;
+            for (int j = 0; j < songList->categories[i].numSongs; j++) {
+                char* name = (char*)malloc(16);
+                memcpy(&songList->categories[i].songNames[j], (BYTE*)lpAddress + songList->categoriesOffset + offset, sizeof(char[16]));
+                //songList->categories[i].songNames[j] = name;
+                offset += (0x10);
+            }
+        }
+    } else if(gameVer != EV) {
+        int offset = 0;
+        for (int i = 0; i < 11; i++) {
+            memcpy(&songList->categories[i].numSongs, &songList->numSongs, sizeof(uint16_t));
+            for (int j = 0; j < songList->categories[i].numSongs; j++) {
+                char* name = (char*)malloc(16);
+                memcpy(&songList->categories[i].songNames[j], (BYTE*)lpAddress + songList->categoriesOffset + offset, sizeof(char[16]));
+                //songList->categories[i].songNames[j] = name;
+                offset += (0x10);
+            }
         }
     }
 
     return true;
 }
 
-bool EZ2SongDb::SaveFile(LPCTSTR savePath, EZ2SongDb::SongList *songList, bool encrypt) {
+bool EZ2SongDb::SaveFile(LPCTSTR savePath, EZ2SongDb::SongList *songList, int gameVer, bool encrypt) {
 
     //Header section = 0x10
     //songlist section = 0x56 * numSongs
@@ -143,16 +185,16 @@ bool EZ2SongDb::SaveFile(LPCTSTR savePath, EZ2SongDb::SongList *songList, bool e
     for (int i = 0; i < songList->numSongs; i++) {
         int offset = 0x56 * i;
         memcpy((BYTE*)lpAddress + songList->songListOffset + offset, &songList->songs[i].name, sizeof(char[songNameSize]));
-        memcpy((BYTE*)lpAddress + gameVerOffset + offset, &songList->songs[i].gameVersion, sizeof(&songList->songs[i].gameVersion));
+        memcpy((BYTE*)lpAddress + songList->songListOffset + gameVerOffset + offset, &songList->songs[i].gameVersion, sizeof(&songList->songs[i].gameVersion));
 
         for (int j = 0; j < numCharts; j++) {
             int chartOffset = 0x09 * j;
 
-            memcpy((BYTE*)lpAddress + nmOffset + chartOffset + offset, &songList->songs[i].charts[j].level, sizeof(uint8_t));
+            memcpy((BYTE*)lpAddress + songList->songListOffset + nmOffset + chartOffset + offset, &songList->songs[i].charts[j].level, sizeof(uint8_t));
 
-            memcpy((BYTE*)lpAddress + nmMinBpm + chartOffset + offset, &songList->songs[i].charts[j].minBPM, sizeof(float));
+            memcpy((BYTE*)lpAddress + songList->songListOffset + nmMinBpm + chartOffset + offset, &songList->songs[i].charts[j].minBPM, sizeof(float));
 
-            memcpy((BYTE*)lpAddress + nmMaxBpm + chartOffset + offset, &songList->songs[i].charts[j].maxBPM, sizeof(float));
+            memcpy((BYTE*)lpAddress + songList->songListOffset + nmMaxBpm + chartOffset + offset, &songList->songs[i].charts[j].maxBPM, sizeof(float));
         }
     }
 
@@ -169,30 +211,54 @@ bool EZ2SongDb::SaveFile(LPCTSTR savePath, EZ2SongDb::SongList *songList, bool e
 
     //re-encrypt the data
     if (encrypt) {
-        CipherBinData(lpAddress, calculatedFileSize, fnexKEY, fnexKEY2);
+        CipherBinData(lpAddress, calculatedFileSize, keys1[gameVer], keys2[gameVer]);
     }
 
-    //Finally, save the file..
-    FILE* file = fopen(savePath, "wb");
-    if (file == NULL) {
-        perror("Error opening file");
-        return false;
-    }
-    size_t bytes_written = fwrite(lpAddress, 1, calculatedFileSize, file); // write the memory range to the file
-    if (bytes_written != calculatedFileSize) {
-        perror("Error writing to file");
-    }
+    //finally, save the data to a file
+    saveMemoryRangeToFile(savePath, lpAddress, calculatedFileSize);
 
-    fclose(file);
     return true;
 }
+
+bool EZ2SongDb::sortByBPM(SongList* songList) {
+    int i, j;
+    Song temp;
+
+    for (i = 0; i < songList->numSongs-1; i++) {
+        for (j = 0; j < songList->numSongs - i-1; j++) {
+            if (songList->songs[j].charts[0].maxBPM > songList->songs[j + 1].charts[0].maxBPM) {
+                temp = songList->songs[j];
+                songList->songs[j] = songList->songs[j+1];
+                songList->songs[j + 1] = temp;
+            }
+        }
+    }
+    return 0;
+}
+
+bool EZ2SongDb::sortByGameVer(SongList* songList) {
+    int i, j;
+    Song temp;
+
+    for (i = 0; i < songList->numSongs - 1; i++) {
+        for (j = 0; j < songList->numSongs - i - 1; j++) {
+            if (songList->songs[j].gameVersion > songList->songs[j + 1].gameVersion) {
+                temp = songList->songs[j];
+                songList->songs[j] = songList->songs[j + 1];
+                songList->songs[j + 1] = temp;
+            }
+        }
+    }
+    return 0;
+}
+
 
 bool EZ2SongDb::shiftSongDown(SongList* songList, int category, int songIndex)
 {
     if (songIndex < songList->categories[category].numSongs-1) {
         char* temp = songList->categories[category].songNames[songIndex + 1];
-        songList->categories[category].songNames[songIndex + 1] = songList->categories[category].songNames[songIndex];
-        songList->categories[category].songNames[songIndex] = temp;
+        *songList->categories[category].songNames[songIndex + 1] = *songList->categories[category].songNames[songIndex];
+        *songList->categories[category].songNames[songIndex] = *temp;
     }
 
     return false;
@@ -202,8 +268,8 @@ bool EZ2SongDb::shiftSongUp(SongList* songList, int category, int songIndex)
 {
     if (songIndex > 0) {
         char* temp = songList->categories[category].songNames[songIndex-1];
-        songList->categories[category].songNames[songIndex - 1] = songList->categories[category].songNames[songIndex];
-        songList->categories[category].songNames[songIndex] = temp;
+        *songList->categories[category].songNames[songIndex - 1] = *songList->categories[category].songNames[songIndex];
+        *songList->categories[category].songNames[songIndex] = *temp;
     }
 
     return false;

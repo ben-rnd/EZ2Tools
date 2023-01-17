@@ -42,7 +42,7 @@ CV2 Mode completely breaks, still WIP to work out how the above offsets are impa
 
 .ezi = track file that just contains id, tone(?) and name of wav file. Has been encrypted since 7th with its own rainbow table. 
 
-.ez = song pattern file, 2 versions, v06 and v08. v06 used up until AEIC, then EC (or EV?) changed to v08, 08 type seems to have changed over time and can support .ezi files. Has been encrypted since 7th with its own rainbow table.
+.ez = song pattern file, 2 versions, v06 and v08. v06 used up until AEIC, then EC (or EV?) changed to v08, 08 type seems to have changed over time and can support large .ezi files, ultimatem uses 2015 tones! Has been encrypted since 7th with its own rainbow table.
 
 .ini = bunch of data relevant to whatever folder its in, every .ini is encrypted the same. Has been encrypted since 2nd with its own rainbow table.
 

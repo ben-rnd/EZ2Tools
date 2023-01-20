@@ -162,6 +162,9 @@ bool EZ2SongDb::openFile(LPCTSTR inputFile, EZ2SongDb::SongList* songList, int g
 
 bool EZ2SongDb::SaveFile(LPCTSTR savePath, EZ2SongDb::SongList *songList, int gameVer, bool encrypt) {
 
+
+    //reinit songlist
+    //memcpy(songList, &EmptySongList, sizeof(SongList));
     //Header section = 0x10
     //songlist section = 0x56 * numSongs
     //category section = 0x2+(0x10*numSongs) for each category
@@ -273,6 +276,76 @@ bool EZ2SongDb::shiftSongUp(SongList* songList, int category, int songIndex)
     }
 
     return false;
+}
+
+bool EZ2SongDb::PatchEXE(LPCTSTR exePath, SongList* songList, int currGame)
+{
+
+
+    // Open the original exe file
+    FILE* exe = fopen(exePath, "r+");
+    if (exe == NULL) {
+        printf("Error opening exe file: %s\n", exePath);
+        return 0;
+    }
+
+    uint32_t numSongs = 0x56 * songList->numSongs;
+
+    switch(currGame){
+    case FNEX:
+        fseek(exe, 0x69DC4, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        fseek(exe, 0x69DED, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        fseek(exe, 0x69F47, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        fseek(exe, 0x69F9A, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        numSongs = 0x4 + 0x56 * songList->numSongs;
+        fseek(exe, 0x69DFA, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        numSongs = 0xC0 + 0x56 * songList->numSongs;
+        fseek(exe, 0x69E00, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        numSongs = 0xC0 + 0x56 * songList->numSongs;
+        fseek(exe, 0x69E70, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        numSongs = 0xC0 + 0x56 * songList->numSongs;
+        fseek(exe, 0x69EFA, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+
+        numSongs = 0x3789BD4 +0x56 * (songList->numSongs - 436); //0x010FF435;
+        fseek(exe, 0x35093, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint32_t), 1, exe);
+
+        numSongs = 0x3789c90 + 0x56 * (songList->numSongs - 436); //0x0FFF435;
+        fseek(exe, 0x35112, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint32_t), 1, exe);
+
+
+        //numSongs = songList->numSongs;
+        fseek(exe, 0x35F54, SEEK_SET);
+        fwrite(&songList->numSongs, sizeof(uint16_t), 1, exe);
+
+        break;
+    default:
+        break;
+        //do nothing:
+    }
+ 
+    // Close both files
+    fclose(exe);
+
+
+    return 1;
 }
 
 

@@ -90,6 +90,7 @@ namespace EZ2SongDb {
         Category categories[NUM_CATEGORIES]; 
     };
 
+   // static const struct SongList EmptySongList;
 
 
     bool openFile(LPCTSTR inputFile, SongList* songList, int gameVer, bool saveDecrypt, bool decrypt = true);
@@ -98,6 +99,7 @@ namespace EZ2SongDb {
     bool sortByGameVer(SongList* songList);
     bool shiftSongDown(SongList* songList, int category, int songIndex);
     bool shiftSongUp(SongList* songList, int category, int songIndex);
+    bool PatchEXE(LPCTSTR exePath, SongList* songList, int currGame);
     
     //----------------
     ///Decryption Keys

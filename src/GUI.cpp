@@ -67,9 +67,10 @@ int GUI::RenderUI(GLFWwindow* window)
             ImGui::Checkbox("Save Decrypted File", &saveDecrypt);
 
             if (ImGui::Button("Open")) {
+                nfdchar_t* fileFilter = "bin";
                 currGame = selectedGame;
                 nfdchar_t* outPath;
-                nfdresult_t result = NFD_OpenDialog(NULL, NULL, &outPath);
+                nfdresult_t result = NFD_OpenDialog(fileFilter, NULL, &outPath);
                 if (result == NFD_OKAY) {
                     currFilePath = outPath;
                     EZ2SongDb::openFile((LPCTSTR)outPath, &songList, currGame, saveDecrypt);
@@ -87,11 +88,23 @@ int GUI::RenderUI(GLFWwindow* window)
    
         if (ImGui::MenuItem("Save", "CTRL+S")) { EZ2SongDb::SaveFile("songtest.bin", &songList, currGame, & songList); }
         if (ImGui::MenuItem("SaveAs", "CTRL+SHIFT+S")) {
+            nfdchar_t* fileFilter = "bin";
             nfdchar_t* outPath = NULL;
-            nfdresult_t result = NFD_SaveDialog(NULL, NULL, &outPath);
+            nfdresult_t result = NFD_SaveDialog(fileFilter, NULL, &outPath);
             if (result == NFD_OKAY) {
                 EZ2SongDb::SaveFile(outPath, &songList, currGame);
                 currFilePath = outPath;
+            }
+        }
+
+        if (songList.numSongs> 1 && ImGui::MenuItem("Patch Executable")) {
+            nfdchar_t* fileFilter = "exe";
+            nfdchar_t* outPath;
+            nfdresult_t result = NFD_OpenDialog(fileFilter, NULL, &outPath);
+            if (result == NFD_OKAY) {
+                currFilePath = outPath;
+                EZ2SongDb::PatchEXE((LPCTSTR)outPath, &songList, currGame);
+                ImGui::CloseCurrentPopup();
             }
         }
 

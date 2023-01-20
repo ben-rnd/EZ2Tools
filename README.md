@@ -1,10 +1,7 @@
 # EZ2 SongDB Editor
 A tool for editing the EZ2AC song.bin files.
 
-
-
 Documentation:
-
 
 # NT:
 INI Decrypt: 00412e02
@@ -16,13 +13,12 @@ EZ:00410607
 00410E04 - EZI
 004134E0,0041374C - INI
 
-
 Songs whill not appear unless Stage.ini is decrypted and ALLSONGS var is edited, just like the old days. This is usefull if you want to add songs to only one game mode. making the following edits will break any gamemode song.bin with an unmodified song.bin. You can pad the bin file with blank songs to fix this.
 A lot of the offsets in the exe for parsing the song details are hardcoded, the following offsets need to be adjusted when adding new songs: 
 
 1) Game crashes while parsing song.bin unless:
-00469deb: -> CMP EDX,dword ptr [ECX + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
 00469dc2: -> to MOV dword ptr [EDI + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
+00469deb: -> CMP EDX,dword ptr [ECX + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
 00469df8: -> to LEA EAX,[EDI + 0x<927C + 0x56 * numAddtionalSongs>] (0x4 + 0x56 * numSongs) 
 00469dfe: -> to LEA ECX,[EDI + 0x<9338 + 0x56 * numAddtionalSongs>] (0xC0 + 0x56 * numSongs)
 
@@ -36,7 +32,26 @@ Fortunately the devs werent complete demons and the code references the .bin fil
 00469f98: -> CMP ESI,dword ptr [ECX + 0x<9278 +  0x56 * numAddtionalSongs>] (0x56 * numSongs)
 00469f45: -> CMP dword ptr [ECX + 0x<9278 +  0x56 * numAddtionalSongs>],EDX (0x56 * numSongs)
 
+ISSUE: after increasing how much song data is read. the data will begin to overwrite the game state vriable at : 371FE
+
+FIX: To allow for more songs, we need to shift where the song.ini stores its data, otherwise the end gets overwritten by the song select menu state values, or worse completesly garbles graphics/crashes the game: 
+the following values needs to all be shifted by the same ammount, with testing i got success by adding 0xEFDF4, maybe I dont have to shift as far
+00435158: -> LEA ESI,[EDI + EAX*0x4 + 0x5e2bc] + New offset  
+004375b7: -> MOV EAX,dword ptr [EBX + 0x5e2bc] + New offset  
+00435116: -> LEA EBX,[EDI + 0x5e3c8] + New offset  
+00435f7d -> LEA EDX,[EBX + EDX*0x4 + 0x5e3c8] + New Offset
+004360ec -> LEA EDX,[EBX + EDX*0x4 + 0x5e3c8] + New Offset
+00436196 -> LEA EDI,[EBX + 0x5e3c8] + New Offset
+
+
+few other spots that have mathcing values as those replaced but so far no impact without patching.. 
+00469E70 = num  songs
+00469EFA = num songs * 0x56
+00469ED8 = num songs again
+
+
 CV2 Mode completely breaks, still WIP to work out how the above offsets are impacting the game.
+
 
 # File format info
 

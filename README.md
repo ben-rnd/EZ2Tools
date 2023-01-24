@@ -3,6 +3,11 @@ A tool for editing the EZ2AC song.bin files.
 
 Documentation:
 
+# EV:
+ini: 004121a0
+ezi: 0040fcb6
+ez: 0040fa75
+
 # NT:
 INI Decrypt: 00412e02
 EZI: 00410837
@@ -52,12 +57,25 @@ few other spots that have mathcing values as those replaced but so far no impact
 
 CV2 Mode completely breaks, still WIP to work out how the above offsets are impacting the game.
 
+offsets of interest for fixing cv2 mode 
+
+35FB8
+
+35FB8
+
+00430f66
+
+004394b7
+
+
+!!!!00469ED0
+!!!!0047F961
 
 # File format info
 
 .ezi = track file that just contains id, tone(?) and name of wav file. Has been encrypted since 7th with its own rainbow table. 
 
-.ez = song pattern file, 2 versions, v06 and v08. v06 used up until AEIC, then EC (or EV?) changed to v08, 08 type seems to have changed over time and can support large .ezi files, ultimatem uses 2015 tones! Has been encrypted since 7th with its own rainbow table.
+.ez = song pattern file, 3 versions, v06 v07 and v08. v06 used up until AEIC, then EC (or EV?) changed to v07, 08 type seems to have changed over time and can support large .ezi files, ultimatem uses 2015 tones! Has been encrypted since 7th with its own rainbow table.
 
 .ini = bunch of data relevant to whatever folder its in, every .ini is encrypted the same. Has been encrypted since 2nd with its own rainbow table.
 

@@ -290,9 +290,13 @@ bool EZ2SongDb::PatchEXE(LPCTSTR exePath, SongList* songList, int currGame)
     }
 
     uint32_t numSongs = 0x56 * songList->numSongs;
-
+    uint32_t newOffset = 0xEFDF4;
     switch(currGame){
     case FNEX:
+
+        // will possibly need to patch 69E70, this of og song count, but i think its just for category stuff
+
+        //for normal
         fseek(exe, 0x69DC4, SEEK_SET);
         fwrite(&numSongs, sizeof(uint16_t), 1, exe);
 
@@ -305,6 +309,14 @@ bool EZ2SongDb::PatchEXE(LPCTSTR exePath, SongList* songList, int currGame)
         fseek(exe, 0x69F9A, SEEK_SET);
         fwrite(&numSongs, sizeof(uint16_t), 1, exe);
 
+        //FOR CV2
+        fseek(exe, 0x69EDA, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+
+        fseek(exe, 0x69EFC, SEEK_SET);
+        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
+            
+        //for normals
         numSongs = 0x4 + 0x56 * songList->numSongs;
         fseek(exe, 0x69DFA, SEEK_SET);
         fwrite(&numSongs, sizeof(uint16_t), 1, exe);
@@ -313,27 +325,83 @@ bool EZ2SongDb::PatchEXE(LPCTSTR exePath, SongList* songList, int currGame)
         fseek(exe, 0x69E00, SEEK_SET);
         fwrite(&numSongs, sizeof(uint16_t), 1, exe);
 
-        numSongs = 0xC0 + 0x56 * songList->numSongs;
-        fseek(exe, 0x69E70, SEEK_SET);
-        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
 
-        numSongs = 0xC0 + 0x56 * songList->numSongs;
-        fseek(exe, 0x69EFA, SEEK_SET);
-        fwrite(&numSongs, sizeof(uint16_t), 1, exe);
-
-
+        //00435090: -> 0x3789BD4 + 0x56 * numAddtionalSongs 
         numSongs = 0x3789BD4 +0x56 * (songList->numSongs - 436); //0x010FF435;
         fseek(exe, 0x35093, SEEK_SET);
         fwrite(&numSongs, sizeof(uint32_t), 1, exe);
 
+        //00435110: -> 0x3789c90 + 0x56 * numAddtionalSongs 
         numSongs = 0x3789c90 + 0x56 * (songList->numSongs - 436); //0x0FFF435;
         fseek(exe, 0x35112, SEEK_SET);
         fwrite(&numSongs, sizeof(uint32_t), 1, exe);
 
 
-        //numSongs = songList->numSongs;
+        //Increase number of songs parsed during catergory init
+        numSongs = songList->numSongs;
         fseek(exe, 0x35F54, SEEK_SET);
         fwrite(&songList->numSongs, sizeof(uint16_t), 1, exe);
+
+
+
+        //These offsets completed relocate the data created when parsing song.ini
+        //allows us to add more songs :))
+        //uint32_t newOffset = 0xEFDF4
+        //    0x3515B = 0x5e2bc + newOffset
+        //    0x375B9 = 0x5e2bc + newOffset
+        //    0x35118 = 0x5e3c8 + newOffset
+        //    0x35F80
+        //    0x360EF
+        //    0x36198;
+
+        newOffset = 0x5e2bc + 0xEFDF4;
+        fseek(exe, 0x3515B, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        fseek(exe, 0x375B9, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+        
+        newOffset = 0x5e3c8 + 0xEFDF4;
+        fseek(exe, 0x35118, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        fseek(exe, 0x35F80, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        fseek(exe, 0x360EF, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        fseek(exe, 0x36198, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        newOffset = 0x5E2C4 + 0xEFDF4;
+        fseek(exe, 0x30F69, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+
+        //Fixes for CV2
+        fseek(exe, 0x394BA, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        newOffset = 0x5E62C + 0xEFDF4;
+        fseek(exe, 0x39447, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        newOffset = 0x5E4D0 + 0xEFDF4;
+        fseek(exe, 0x3946D, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        fseek(exe, 0x39301, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        newOffset = -(0x5E29C + 0xEFDF4);
+        fseek(exe, 0x362B2, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
+        newOffset = -(0x5E298 + 0xEFDF4);
+        fseek(exe, 0x362EF, SEEK_SET);
+        fwrite(&newOffset, sizeof(uint32_t), 1, exe);
+
 
         break;
     default:

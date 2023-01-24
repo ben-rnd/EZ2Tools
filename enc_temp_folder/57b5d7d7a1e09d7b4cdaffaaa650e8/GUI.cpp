@@ -405,7 +405,7 @@ void showCategoryView() {
             //songList.categories[selectedCatergory].songNames[songList.categories[selectedCatergory].numSongs-1] = newSong;
         };
     }
-    ImGui::Text("Maximum number of songs added to category.");
+    ImGui::Text("maximum number Of songs added to category");
     ImGui::SameLine();
 
 

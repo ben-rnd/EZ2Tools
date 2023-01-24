@@ -10,6 +10,7 @@
 #define songStructSize 0x56
 
 #define MAX_SONGS 1000
+#define MAX_SONGS_CATEGORIES 436
 #define numCharts 4
 
 //headerOffsets
@@ -69,7 +70,7 @@ namespace EZ2SongDb {
     //number of playlist seems to be hardcoded?
     struct Category {
         uint16_t numSongs = 0;
-        char songNames[MAX_SONGS][16];
+        char songNames[MAX_SONGS_CATEGORIES][16];
     };
 
     //example bytes of the EZSL file (song.bin) header for streetmix

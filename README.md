@@ -71,6 +71,9 @@ offsets of interest for fixing cv2 mode
 !!!!00469ED0
 !!!!0047F961
 
+
+CV FIXED BAYBEEE WE GOIN
+
 # File format info
 
 .ezi = track file that just contains id, tone(?) and name of wav file. Has been encrypted since 7th with its own rainbow table. 
@@ -85,6 +88,8 @@ offsets of interest for fixing cv2 mode
 the above files are easily decrypted using the "Ez2Decrypt" tool. Later versions require the tool to be modfied to work correctly, but easy enough to do if you know what to look for ;)
 
 .bin = new file type since EV. Contains song data such as file name, label, bpm, and levels. has 3 revisions. 00 for EV, 01 for NT and TT, 03 for FN and FNEX. 01 introduced BPM data. 03 no longer includes label data and introduced the "categories" feature. encrypted using XOR subsitution cipher with 2 keys. Easily decrypted with this tool ;)
+
+# Migrated to Github from dev-sul on 31/1/23
 
 
 

@@ -223,7 +223,10 @@ void showSongListView()
 
             }
             ImGui::SameLine();
-            ImGui::Button(ICON_FA_TRASH);
+            if (ImGui::Button(ICON_FA_TRASH)){
+                songList.numSongs--;
+                songList.categoriesOffset -= 0x56;
+            }
             ImGui::TableNextColumn();
 
 
@@ -392,7 +395,10 @@ void showCategoryView() {
                 EZ2SongDb::shiftSongDown(&songList, selectedCatergory, i);
             };
             ImGui::SameLine();
-            ImGui::Button(ICON_FA_TRASH);
+            std::string deleteSongLabel = ICON_FA_TRASH"##" + std::to_string(i + 1);
+            if (ImGui::Button(deleteSongLabel.c_str())) {
+                songList.categories[selectedCatergory].numSongs--;
+            }
             ImGui::TableNextColumn();
         }
 
@@ -404,11 +410,10 @@ void showCategoryView() {
             songList.categories[selectedCatergory].numSongs++;
             //songList.categories[selectedCatergory].songNames[songList.categories[selectedCatergory].numSongs-1] = newSong;
         };
+    }else{
+        ImGui::Text("Maximum number of songs added to category.");
     }
-    ImGui::Text("Maximum number of songs added to category.");
-    ImGui::SameLine();
-
-
+    //ImGui::SameLine();
 
     ImGui::EndChild();
 

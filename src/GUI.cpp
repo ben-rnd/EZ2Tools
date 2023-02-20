@@ -172,8 +172,8 @@ void showSongListView()
         ImGui::TableSetupColumn("Min BPM");
         ImGui::TableSetupColumn("Max BPM");
         ImGui::TableSetupColumn("NM");
-        ImGui::TableSetupColumn("SHD");
         ImGui::TableSetupColumn("HD");
+        ImGui::TableSetupColumn("SHD");
         ImGui::TableSetupColumn("EX");
         ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
         ImGui::TableHeadersRow();
@@ -276,23 +276,23 @@ void showSongListView()
 
                 ImU8 steps = 1;
                 ImGui::InputScalar("Normal Level", ImGuiDataType_U8, &tempEditSong.charts[0].level, &steps, NULL, "%d", { ImGuiInputTextFlags_CharsDecimal });
-                if (tempEditSong.charts[0].level > 20) {
-                    tempEditSong.charts[0].level = 20;
+                if (tempEditSong.charts[0].level > 21) {
+                    tempEditSong.charts[0].level = 21;
                 }
 
                 ImGui::InputScalar("Hard Level", ImGuiDataType_U8, &tempEditSong.charts[1].level, &steps, NULL, "%d", { ImGuiInputTextFlags_CharsDecimal });
-                if (tempEditSong.charts[0].level > 20) {
-                    tempEditSong.charts[0].level = 20;
+                if (tempEditSong.charts[0].level > 21) {
+                    tempEditSong.charts[0].level = 21;
                 }
 
                 ImGui::InputScalar("Super Hard Level", ImGuiDataType_U8, &tempEditSong.charts[2].level, &steps, NULL, "%d", { ImGuiInputTextFlags_CharsDecimal });
-                if (tempEditSong.charts[0].level > 20) {
-                    tempEditSong.charts[0].level = 20;
+                if (tempEditSong.charts[0].level > 21) {
+                    tempEditSong.charts[0].level = 21;
                 }
 
                 ImGui::InputScalar("EX Level", ImGuiDataType_U8, &tempEditSong.charts[3].level, &steps, NULL, "%d", { ImGuiInputTextFlags_CharsDecimal });
-                if (tempEditSong.charts[0].level > 20) {
-                    tempEditSong.charts[0].level = 20;
+                if (tempEditSong.charts[0].level > 21) {
+                    tempEditSong.charts[0].level = 21;
                 }
 
                 if (ImGui::Button("Save")) {

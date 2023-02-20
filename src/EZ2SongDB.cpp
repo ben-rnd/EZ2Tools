@@ -62,6 +62,7 @@ bool saveMemoryRangeToFile(LPCTSTR filePath, LPVOID address, int size) {
     size_t bytes_written = fwrite(address, 1, size, file); // write the memory range to the file
     if (bytes_written != size) {
         perror("Error writing to file");
+        return false;
     }
 
     fclose(file);

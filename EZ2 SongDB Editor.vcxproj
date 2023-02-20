@@ -86,6 +86,7 @@
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
     <IncludePath>$(IncludePath)</IncludePath>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -141,10 +142,13 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>lib\font-awesome;lib\nativefiledialog\include;lib\imgui;lib\imgui\backends;lib\imgui\examples\libs\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -157,6 +161,9 @@
       </IgnoreSpecificDefaultLibraries>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
+      <ProgramDatabaseFile />
+      <StripPrivateSymbols>/Zi</StripPrivateSymbols>
+      <AssemblyDebug>false</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

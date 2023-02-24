@@ -223,7 +223,8 @@ void showSongListView()
 
             }
             ImGui::SameLine();
-            if (ImGui::Button(ICON_FA_TRASH)){
+            std::string delSongLabel = ICON_FA_TRASH"##" + std::to_string(i + 1);
+            if (ImGui::Button(delSongLabel.c_str())){
                 songList.numSongs--;
                 songList.categoriesOffset -= 0x56;
             }

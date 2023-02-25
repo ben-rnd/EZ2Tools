@@ -91,9 +91,9 @@ std::wstring ExePath() {
 void addAntiTamperByteAndSave(LPWSTR ezFileName) {
 
     if(endsWith(ezFileName, L".ez")){
-        wstring fileName = ExePath().append(L"\\");
-        fileName.append(ezFileName);
-        HANDLE hFile = CreateFileW(fileName.c_str() , GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        //wstring fileName = ExePath().append(L"\\");
+        //fileName.append(ezFileName);
+        HANDLE hFile = CreateFileW(ezFileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile == INVALID_HANDLE_VALUE) {
             DWORD dwLastError = GetLastError();
             return;
@@ -135,7 +135,7 @@ void addAntiTamperByteAndSave(LPWSTR ezFileName) {
 
         }
 
-        saveMemoryRangeToFile(fileName.c_str(), lpAddress, fileSize);
+        saveMemoryRangeToFile(ezFileName, lpAddress, fileSize);
     }
 
 }
@@ -143,12 +143,12 @@ void addAntiTamperByteAndSave(LPWSTR ezFileName) {
 Chart chartToConvert;
 
 
-void ConvertToNew() {
-    LPVOID lpAddress = VirtualAlloc(NULL, chartToConvert.NewSize, MEM_COMMIT, PAGE_READWRITE);
+void ConvertToNew(LPVOID lpAddress) {
+
 
     if (lpAddress != 0) {
         char headerText[] = "EZFF";
-        UINT8 newVer = 0x8;
+        UINT8 newVer = 0x7; //v6 is old, v7 is EV standard but FNEX can play it. v8 is New, required song name in header
         memcpy((BYTE*)lpAddress, &headerText, sizeof(headerText));
         memcpy((BYTE*)lpAddress + 0x5, &newVer, sizeof(UINT8));
 
@@ -203,7 +203,6 @@ void ConvertToNew() {
         }
     }
 
-    saveMemoryRangeToFile(L"C:\\Users\\randa\\source\\repos\\ez2songdbeditor\\x64\\Debug\\test-yes-yes.ez", lpAddress, chartToConvert.NewSize);
 
 }
 
@@ -273,7 +272,11 @@ void OpenOld(LPWSTR ezFileName) {
 
         chartToConvert.NewSize = newFileSize;
 
-        ConvertToNew();
+        LPVOID lpAddress2 = VirtualAlloc(NULL, chartToConvert.NewSize, MEM_COMMIT, PAGE_READWRITE); 
+
+        ConvertToNew(lpAddress2);
+
+        saveMemoryRangeToFile(ezFileName, lpAddress2, chartToConvert.NewSize);
     }
 
 }
@@ -327,7 +330,6 @@ static void iterate_dir(std::wstring dir) {
 int main(int argc, char** argv)
 {
     bool addTamper = false;
-    getchar();
 
     if (argc != 2) {
         iterate_dir(ExePath());

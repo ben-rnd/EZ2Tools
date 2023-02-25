@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EZ2 SongDB Editor", "EZ2 So
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EZ2ChartConverter", "EZ2ChartConverter\EZ2ChartConverter.vcxproj", "{05B17055-9978-4EB7-AFA7-A2E335A70025}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eziConverter", "eziConverter\eziConverter.vcxproj", "{9572A860-3210-4656-86E6-A8CE2A19D342}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bmp2abm-deluxe", "bmp2abm-deluxe\bmp2abm-deluxe.vcxproj", "{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +35,22 @@ Global
 		{05B17055-9978-4EB7-AFA7-A2E335A70025}.Release|x64.Build.0 = Release|x64
 		{05B17055-9978-4EB7-AFA7-A2E335A70025}.Release|x86.ActiveCfg = Release|Win32
 		{05B17055-9978-4EB7-AFA7-A2E335A70025}.Release|x86.Build.0 = Release|Win32
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Debug|x64.ActiveCfg = Debug|x64
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Debug|x64.Build.0 = Debug|x64
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Debug|x86.ActiveCfg = Debug|Win32
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Debug|x86.Build.0 = Debug|Win32
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Release|x64.ActiveCfg = Release|x64
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Release|x64.Build.0 = Release|x64
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Release|x86.ActiveCfg = Release|Win32
+		{9572A860-3210-4656-86E6-A8CE2A19D342}.Release|x86.Build.0 = Release|Win32
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Debug|x64.ActiveCfg = Debug|x64
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Debug|x64.Build.0 = Debug|x64
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Debug|x86.ActiveCfg = Debug|Win32
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Debug|x86.Build.0 = Debug|Win32
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Release|x64.ActiveCfg = Release|x64
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Release|x64.Build.0 = Release|x64
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Release|x86.ActiveCfg = Release|Win32
+		{C0BF3317-CB7F-4BDC-90DA-8F4FF9BDACAD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

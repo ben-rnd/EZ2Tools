@@ -13,6 +13,9 @@
 
 using namespace std;
 
+static int pngKey[128] = { 6, 0x3d, 0x7d, 0x23,  0x10, 0xfe,  0xd,  0xec,  0xe8,  0x10,  0xd4,  0x4c,  0xb8,  0xc5,  0x7e,  0x2e,  0xf,  1,  2,  0x21,  0x24,  4,  0x20,  0x12,  0x17,  0x1a,  0xe4,  0x1a,  0x7c,  0x57,  0xde,  0xe,  5,  0xb,  2,  3,  0x3d,  0x29,  0x23,  0x13,  0xd5,  6,  0x1c,  0x56,  0x18,  0x57,  2,  0x54,  0x41,  1,  2,  0x1f,  0x56,  4,  3,  0xd8,  0x27,  6,  0x3a,  6,  4,  7,  2,  4,  5,  0x3d,  0x19,  0x23,  6,  0x36,  0x1f,  0x24,  0xd3,  6,  0x52,  6,  0x54,  0x61,  0x1a,  0x2e,  0xf,  1,  2,  0x21,  0x24,  0x36,  0x1f,  0x11,  0x1f,  0x7e,  0x1c,  6,  0x18,  0x57,  0x16,  4,  5,  0xb,  2,  3,  0xa1,  0x19b,  0x87,  0x74,  0xd,  0x3d,  0x1c,  0x56,  0x18,  0x57,  2,  0x54,  0x41,  1,  2,  0x1f,  0x56,  0xe,  3,  0xa6,  0x23,  0x10,  0x3a,  6,  4,  7,  2,  4 };
+
+
 bool saveMemoryRangeToFile(LPCTSTR filePath, LPVOID address, int size) {
 
     FILE* file = _wfopen(filePath, L"wb");
@@ -53,10 +56,9 @@ std::wstring ExePath() {
     return std::wstring(buffer).substr(0, pos);
 }
 
-void convertToAbm(LPWSTR ezFileName) {
-    if (endsWith(ezFileName, L".bmp")) {
-        //wstring fileName = ExePath().append(L"\\");
-        //fileName.append(ezFileName);
+void convertToPng(LPWSTR ezFileName) {
+    if (endsWith(ezFileName, L".png")) {
+
         HANDLE hFile = CreateFileW(ezFileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile == INVALID_HANDLE_VALUE) {
             DWORD dwLastError = GetLastError();
@@ -71,37 +73,22 @@ void convertToAbm(LPWSTR ezFileName) {
 
         CloseHandle(hFile);
 
-        UINT8 emptyBit = 0x0;
-        UINT16 AW = 0x5741;
-        memcpy((BYTE*)lpAddress, &AW, sizeof(UINT16));
-        memcpy((BYTE*)lpAddress + 0x2, (BYTE*)lpAddress + 0x1c, sizeof(UINT16));
-        memcpy((BYTE*)lpAddress + 0x3, &emptyBit, sizeof(UINT8));
-        memcpy((BYTE*)lpAddress + 0x4, &emptyBit, sizeof(UINT8));
-        memcpy((BYTE*)lpAddress + 0x5, &emptyBit, sizeof(UINT8));
-        memcpy((BYTE*)lpAddress + 0x6, &emptyBit, sizeof(UINT8));
-        memcpy((BYTE*)lpAddress + 0x7, &emptyBit, sizeof(UINT8));
-        memcpy((BYTE*)lpAddress + 0x9, &emptyBit, sizeof(UINT8));
 
+        int counter = 0;
+        for (int i = 0; i < 0x100; i++ ) {
+            char* dataAtOffset = (char*)((BYTE*)lpAddress + i);
+            *dataAtOffset = *dataAtOffset - pngKey[counter];
+            counter = counter + 1;
+            if (counter >= sizeof(pngKey)/sizeof(pngKey)[0]) {
+                counter = 0;
+            }
+        }
 
-        memcpy((BYTE*)lpAddress + 0x6, (BYTE*)lpAddress + 0x12, sizeof(UINT16));
-        memcpy((BYTE*)lpAddress + 0x8, (BYTE*)lpAddress + 0x16, sizeof(UINT16));
-
-        DWORD* dataAtOffset = (DWORD*)((BYTE*)lpAddress + 0xA); 
-        DWORD originalValue = *dataAtOffset;  
-        *dataAtOffset = *dataAtOffset ^ 0x109a; 
-
-        dataAtOffset = (DWORD*)((BYTE*)lpAddress + 0x12);
-        originalValue = *dataAtOffset;
-        *dataAtOffset = *dataAtOffset ^ 0xcfa1;
-
-        dataAtOffset = (DWORD*)((BYTE*)lpAddress + 0x16);
-        *dataAtOffset = *dataAtOffset ^ 0x51ae;
-
-        dataAtOffset = (DWORD*)((BYTE*)lpAddress + 0x1c);
-        *dataAtOffset = *dataAtOffset ^ 0xb18f;
-
-        replace_file_extension(ezFileName, L".abm");
+        replace_file_extension(ezFileName, L".bng");
         saveMemoryRangeToFile(ezFileName, lpAddress, fileSize);
+
+        VirtualFree(lpAddress, fileSize, MEM_RELEASE);
+
     }
 }
 
@@ -137,10 +124,12 @@ static void iterate_dir(std::wstring dir) {
         }
         if (fd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) {
             fn_ws = std::wstring(fd.cFileName);
-            fn = std::wstring(fn_ws.begin(), fn_ws.end());
-            if (endsWith(fn, L".bmp")) {
-                printf("Converting: %ls\n", fn.c_str());
-                convertToAbm((LPWSTR)fn.c_str());
+            if(!endsWith(fd.cFileName, L"png2png.exe")){
+                fn = std::wstring(fn_ws.begin(), fn_ws.end());
+                if (endsWith(fn, L".png")) {
+                    printf("Converting: %ls\n", fn.c_str());
+                    convertToPng((LPWSTR)fn.c_str());
+                }
             }
         }
     }
@@ -152,6 +141,8 @@ static void iterate_dir(std::wstring dir) {
 int main(int argc, char** argv)
 {
     bool addTamper = false;
+
+    getchar();
 
     if (argc != 2) {
         iterate_dir(ExePath());
@@ -165,9 +156,11 @@ int main(int argc, char** argv)
     mbstowcs(wtext, argv[1], strlen(argv[1]) + 1);//Plus null
     LPWSTR ezFileName = wtext;
     printf("Converting: %ls\n", ezFileName);
-    convertToAbm(ezFileName);
+    convertToPng(ezFileName);
 
 
     //addAntiTamperByteAndSave(ezFileName);
 
 }
+
+

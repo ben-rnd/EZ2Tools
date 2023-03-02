@@ -24,6 +24,7 @@
     <ProjectGuid>{9572a860-3210-4656-86e6-a8ce2a19d342}</ProjectGuid>
     <RootNamespace>eziConverter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>EZ2EziConverter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

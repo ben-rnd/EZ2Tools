@@ -24,6 +24,7 @@
     <ProjectGuid>{acb8d42c-59aa-4356-abfa-befded721ce5}</ProjectGuid>
     <RootNamespace>png2png</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>3sPng2png</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -259,10 +259,11 @@ bool EZ2SongDb::sortByGameVer(SongList* songList) {
 
 bool EZ2SongDb::shiftSongDown(SongList* songList, int category, int songIndex)
 {
+    char temp[16];
     if (songIndex < songList->categories[category].numSongs-1) {
-        char* temp = songList->categories[category].songNames[songIndex + 1];
-        *songList->categories[category].songNames[songIndex + 1] = *songList->categories[category].songNames[songIndex];
-        *songList->categories[category].songNames[songIndex] = *temp;
+        memcpy(temp, songList->categories[category].songNames[songIndex + 1], sizeof(temp));
+        memcpy(songList->categories[category].songNames[songIndex + 1], songList->categories[category].songNames[songIndex], sizeof(temp));
+        memcpy(songList->categories[category].songNames[songIndex], temp, sizeof(temp));
     }
 
     return false;
@@ -270,10 +271,11 @@ bool EZ2SongDb::shiftSongDown(SongList* songList, int category, int songIndex)
 
 bool EZ2SongDb::shiftSongUp(SongList* songList, int category, int songIndex)
 {
+    char temp[16];
     if (songIndex > 0) {
-        char* temp = songList->categories[category].songNames[songIndex-1];
-        *songList->categories[category].songNames[songIndex - 1] = *songList->categories[category].songNames[songIndex];
-        *songList->categories[category].songNames[songIndex] = *temp;
+        memcpy(temp, songList->categories[category].songNames[songIndex - 1], sizeof(temp));
+        memcpy(songList->categories[category].songNames[songIndex - 1], songList->categories[category].songNames[songIndex], sizeof(temp));
+        memcpy(songList->categories[category].songNames[songIndex], temp, sizeof(temp));
     }
 
     return false;

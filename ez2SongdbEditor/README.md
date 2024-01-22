@@ -22,37 +22,37 @@ Songs whill not appear unless Stage.ini is decrypted and ALLSONGS var is edited,
 A lot of the offsets in the exe for parsing the song details are hardcoded, the following offsets need to be adjusted when adding new songs: 
 
 1) Game crashes while parsing song.bin unless:
-00469dc2: -> to MOV dword ptr [EDI + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
-00469deb: -> CMP EDX,dword ptr [ECX + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
-00469df8: -> to LEA EAX,[EDI + 0x<927C + 0x56 * numAddtionalSongs>] (0x4 + 0x56 * numSongs) 
-00469dfe: -> to LEA ECX,[EDI + 0x<9338 + 0x56 * numAddtionalSongs>] (0xC0 + 0x56 * numSongs)
+- 00469dc2: -> to MOV dword ptr [EDI + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
+- 00469deb: -> CMP EDX,dword ptr [ECX + 0x<9278 + 0x56 * numAddtionalSongs>] (0x56 * numSongs)
+- 00469df8: -> to LEA EAX,[EDI + 0x<927C + 0x56 * numAddtionalSongs>] (0x4 + 0x56 * numSongs) 
+- 00469dfe: -> to LEA ECX,[EDI + 0x<9338 + 0x56 * numAddtionalSongs>] (0xC0 + 0x56 * numSongs)
 
 The following may restrict how many songs we can add. These are hardcoded chunks of storage for the song list. unsure how much extra  space we have, reducing size of the "ALL" category may buy some space.
 2) Game crashes upon loading stage (and scanning catergories) unless: 
-00435090: -> 0x3789BD4 + 0x56 * numAddtionalSongs 
-00435110: -> 0x3789c90 + 0x56 * numAddtionalSongs 
-Fortunately the devs werent complete demons and the code references the .bin file for grabbing the no. of songs in a category.
+- 00435090: -> 0x3789BD4 + 0x56 * numAddtionalSongs 
+- 00435110: -> 0x3789c90 + 0x56 * numAddtionalSongs 
+- Fortunately the devs werent complete demons and the code references the .bin file for grabbing the no. of songs in a category.
 
 3) Game crashes on exit unless:
-00469f98: -> CMP ESI,dword ptr [ECX + 0x<9278 +  0x56 * numAddtionalSongs>] (0x56 * numSongs)
-00469f45: -> CMP dword ptr [ECX + 0x<9278 +  0x56 * numAddtionalSongs>],EDX (0x56 * numSongs)
+- 00469f98: -> CMP ESI,dword ptr [ECX + 0x<9278 +  0x56 * numAddtionalSongs>] (0x56 * numSongs)
+- 00469f45: -> CMP dword ptr [ECX + 0x<9278 +  0x56 * numAddtionalSongs>],EDX (0x56 * numSongs)
 
 ISSUE: after increasing how much song data is read. the data will begin to overwrite the game state vriable at : 371FE
 
 FIX: To allow for more songs, we need to shift where the song.ini stores its data, otherwise the end gets overwritten by the song select menu state values, or worse completesly garbles graphics/crashes the game: 
 the following values needs to all be shifted by the same ammount, with testing i got success by adding 0xEFDF4, maybe I dont have to shift as far
-00435158: -> LEA ESI,[EDI + EAX*0x4 + 0x5e2bc] + New offset  
-004375b7: -> MOV EAX,dword ptr [EBX + 0x5e2bc] + New offset  
-00435116: -> LEA EBX,[EDI + 0x5e3c8] + New offset  
-00435f7d -> LEA EDX,[EBX + EDX*0x4 + 0x5e3c8] + New Offset
-004360ec -> LEA EDX,[EBX + EDX*0x4 + 0x5e3c8] + New Offset
-00436196 -> LEA EDI,[EBX + 0x5e3c8] + New Offset
+- 00435158: -> LEA ESI,[EDI + EAX*0x4 + 0x5e2bc] + New offset  
+- 004375b7: -> MOV EAX,dword ptr [EBX + 0x5e2bc] + New offset  
+- 00435116: -> LEA EBX,[EDI + 0x5e3c8] + New offset  
+- 00435f7d -> LEA EDX,[EBX + EDX*0x4 + 0x5e3c8] + New Offset
+- 004360ec -> LEA EDX,[EBX + EDX*0x4 + 0x5e3c8] + New Offset
+- 00436196 -> LEA EDI,[EBX + 0x5e3c8] + New Offset
 
 
 few other spots that have mathcing values as those replaced but so far no impact without patching.. 
-00469E70 = num  songs
-00469EFA = num songs * 0x56
-00469ED8 = num songs again
+- 00469E70 = num  songs
+- 00469EFA = num songs * 0x56
+- 00469ED8 = num songs again
 
 
 CV2 Mode completely breaks, still WIP to work out how the above offsets are impacting the game.
